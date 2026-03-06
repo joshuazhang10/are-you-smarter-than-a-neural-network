@@ -77,6 +77,7 @@ function displayImage(arrayBuffer, imageIndex, canvasId) {
         imageData.data[pixelIdx + 3] = 255; // Full opacity
     }
 
+    document.getElementById('loading-canvas').style.display = "none";
     ctx.putImageData(imageData, 0, 0);
     document.getElementById('label').innerText = correctLabel;
 }
