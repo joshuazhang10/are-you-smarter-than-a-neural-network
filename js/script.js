@@ -12,6 +12,7 @@ const CLASSES = [
 ]
 
 let correctLabel;
+let guess;
 
 // netActs become flattened when read, so we have to be careful with indexing
 let netActs; 
@@ -23,6 +24,33 @@ let count; // Index of the image
 
 let correctGuesses = 0;
 let totalGuesses = 0;
+
+let state = 'GUESSING';
+
+function displayState(curState) {
+    state = curState;
+    switch (state) {
+        case 'GUESSING':
+            document.getElementById('label').style.display = "none";
+            document.getElementById('softmax-prediction').style.display = "none";
+            document.getElementById('guess-status').innerText = "";
+            break;
+        case 'REVEALING':
+            document.getElementById('label').style.display = "block";
+            document.getElementById('softmax-prediction').style.display = "block";
+            
+            guess_element = document.getElementById('guess-status');
+            if (guess.toLowerCase() === correctLabel) {
+                guess_element.innerText = "Correct!";
+                guess_element.style.color = "green";
+                correctGuesses++;
+            } else {
+                guess_element.innerText = "Incorrect.";
+                guess_element.style.color = "red";
+            }
+            break;
+    }
+}
 
 function displayImage(arrayBuffer, imageIndex, canvasId) {
     const RECORD_SIZE = 3073; // label + 3072 byes
@@ -65,23 +93,18 @@ async function getDataset() {
         predictions = new Uint32Array(await predictionsBin.arrayBuffer());
         testBatchBuffer = await testBatchBin.arrayBuffer();
 
-        getNextImage();
+        getNextImage(true);
     } catch (error) {
         console.error("Error loading dataset:", error);
     }
 }
 
-function getNextImage() {
-    if (!testBatchBuffer) {
+function getNextImage(isFirstLoad=false) {
+    if (!isFirstLoad && (!testBatchBuffer || state === 'GUESSING')) {
         return;
     }
 
-    // Make all info invisible
-    document.getElementById('label').style.display = "none";
-    document.getElementById('softmax-prediction').style.display = "none";
-    document.getElementById('guess-status').innerText = "";
-
-    document.getElementById('label').style.display = "none";
+    displayState('GUESSING');
 
     count = Math.floor(10_000 * Math.random());
     displayImage(testBatchBuffer, count, 'image-canvas');
@@ -97,7 +120,11 @@ function getNextImage() {
 }
 
 function submitGuess() {
-    const guess = document.getElementById("guess").value;
+    guess = document.getElementById("guess").value;
+    if (state === 'REVEALING') {
+        getNextImage();
+    }
+
     if (!guess) {
         return;
     }
@@ -105,19 +132,8 @@ function submitGuess() {
     // console.log(guess);
     // console.log(correctLabel);
 
-    // Make all info visible
-    document.getElementById('label').style.display = "block";
-    document.getElementById('softmax-prediction').style.display = "block";
+    displayState('REVEALING');
 
-    guess_element = document.getElementById('guess-status');
-    if (guess.toLowerCase() === correctLabel) {
-        guess_element.innerText = "Correct!";
-        guess_element.style.color = "green";
-        correctGuesses++;
-    } else {
-        guess_element.innerText = "Incorrect.";
-        guess_element.style.color = "red";
-    }
     totalGuesses++;
     document.getElementById("guess").value = ""; // Clear guess box
     document.getElementById("score").innerText = `Score: ${correctGuesses}/${totalGuesses}`;

@@ -81,9 +81,9 @@ h1, h3, .continue, #score {
     margin: 2rem 0 4rem 0;
 }
 
-.continue {
+button {
     height: 4rem;
-    width: 8rem;
+    width: 7rem;
     border-radius: 1rem;
     color: white;
     font-size: large;
