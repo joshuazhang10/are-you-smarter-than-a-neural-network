@@ -1,0 +1,109 @@
+h1, h3, .continue, #score {
+    font-family:system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+.authors {
+    margin-top: 0; 
+    color: rgb(84, 82, 82);
+}
+
+#score {
+    font-size: 2rem;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 5rem;
+    gap: 1rem;
+}
+
+#image-grid {
+    display: grid;
+    align-items: center;
+    justify-content: center;
+    grid-template-columns: 10rem 24rem 10rem;
+    gap: 8rem;
+}
+
+.image-grid-column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    text-align: center;
+}
+
+#image-canvas {
+    display: block;
+    margin: 0 auto;
+    height: 24rem;
+    width: 24rem;
+    image-rendering: pixelated;
+}
+
+#label {
+    height: 18px;
+    /* display: none; */
+}
+
+#guess {
+    text-align: center;
+    border-radius: 0.5rem;
+    height: 1.5rem;
+    width: 8rem;
+    margin-right: 1rem;
+}
+
+#correct {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    top: 10%;
+    margin: auto;
+    width: 24rem;
+    gap: 1rem;
+}
+
+#incorrect {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    margin: auto;
+    width: 22rem;
+    gap: 1rem;
+}
+
+#guess-form {
+    margin: 2rem 0 4rem 0;
+}
+
+.continue {
+    height: 4rem;
+    width: 8rem;
+    border-radius: 1rem;
+    color: white;
+    font-size: large;
+    font-weight: bold;
+    border-width: 3x;
+    border-color: rgb(192, 192, 192);
+    cursor: pointer;
+    background: linear-gradient(180deg, rgb(148, 148, 148) 0%, rgb(93, 93, 93) 66%, rgb(41, 41, 41) 100%);
+}
+
+.continue:hover {
+    background: linear-gradient(180deg, rgb(131, 131, 131) 0%, rgb(73, 73, 73) 66%, rgb(38, 38, 38) 100%);
+}
+
+.submit-guess {
+    height: 2rem;
+    width: 4rem;
+    border-radius: 0.5rem;
+}
+
+#softmax-prediction {
+    display: none;
+}

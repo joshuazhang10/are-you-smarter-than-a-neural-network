@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CS443 Project 1 Extension</title>
+    <link rel="stylesheet" href="./css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Are you smarter than a neural network?</h1>
+        <h3 class="authors">Aleksandra Avramenko and Joshua Zhang</h3>
+
+        <div id="score"></div>
+
+        <div id="image-grid">
+            <div class="image-grid-column">
+                <div id="softmax-prediction"></div>
+                <!-- TODO: <div>Modified tanh predicted </div> -->
+                <div></div>
+            </div>
+            <div class="image-grid-column">
+                <!-- <img src="./images/correct.png" id="correct"> -->
+                <!-- <img src="./images/incorrect.png" id="incorrect"> -->
+                <canvas id="image-canvas" width="32" height="32" ></canvas>
+            </div>
+            <div class="image-grid-column">
+                <div id="guess-status"></div>
+                <div id="label"></div>
+            </div>
+        </div>
+
+        <button id="continue" class="continue" onclick="getNextImage();">Continue</button>
+
+        <form id="guess-form" onsubmit="event.preventDefault(); submitGuess();">
+            <input list="cifar-classes" id="guess" autocomplete="off">
+            <datalist id="cifar-classes"></datalist>
+
+            <button class="submit-guess" id="submit-guess">Guess</button>
+        </form>
+    </div>
+    
+    <script src="./js/script.js"></script>
+</body>
+</html>
+
