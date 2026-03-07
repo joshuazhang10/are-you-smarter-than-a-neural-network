@@ -123,7 +123,11 @@ function getNextImage(isFirstLoad=false) {
 function submitGuess() {
     guess = document.getElementById("guess").value;
     if (state === 'REVEALING') {
-        getNextImage();
+        if (!guess) { // User can hit enter quickly after guessing to move to next image
+            getNextImage();
+        } else { // Prevents user from submitting a guess multiple times for same image
+            return;
+        }
     }
 
     if (!guess) {
