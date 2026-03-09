@@ -27,6 +27,99 @@ let totalGuesses = 0;
 
 let state = 'GUESSING';
 
+const canvas = document.getElementById("fireworksCanvas");
+const ctx = canvas.getContext("2d");
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+window.addEventListener("resize", () => [canvas.width, canvas.height] = [window.innerWidth, window.innerHeight], false);
+
+class Firework {
+    constructor() {
+        this.x = Math.random() * canvas.width;
+        this.y = canvas.height;
+        this.sx = Math.random() * 3 - 1.5;
+        this.sy = Math.random() * -3;
+        this.size = Math.random() * 2 + 1;
+        const colorVal = Math.floor(Math.random() * 0xffffff);
+        this.r = (colorVal >> 16) & 255;
+        this.g = (colorVal >> 8) & 255;
+        this.b = colorVal & 255;
+        this.shouldExplode = false;
+    }
+
+    update() {
+        this.x += this.sx;
+        this.y += this.sy;
+        this.sy += 0.05;
+        this.shouldExplode = this.sy >= 2 || this.y <= 100 || this.x <= 0 || this.x >= canvas.width;
+    }
+
+    draw() {
+        ctx.fillStyle = `rgb(${this.r},${this.g},${this.b})`;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+    }
+}
+
+class Particle {
+    constructor(x, y, r, g, b) {
+        this.x = x;
+        this.y = y;
+        this.sx = Math.random() * 3 - 1.5;
+        this.sy = Math.random() * 3 - 1.5;
+        this.r = r;
+        this.g = g;
+        this.b = b;
+        this.size = Math.random() * 2 + 1;
+        this.life = 100;
+    }
+    update() {
+        this.x += this.sx;
+        this.y += this.sy;
+        this.life -= 1;
+    }
+    draw() {
+        ctx.fillStyle = `rgba(${this.r},${this.g},${this.b},${this.life / 100})`;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+    }
+}
+
+const fireworks = [];
+const particles = [];
+let fireworksActive = false;
+
+function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    if (fireworksActive && Math.random() < 0.25) fireworks.push(new Firework());
+
+    fireworks.forEach((firework, i) => {
+        firework.update();
+        firework.draw();
+        if (firework.shouldExplode) {
+            for (let j = 0; j < 50; j++) {
+                particles.push(new Particle(firework.x, firework.y, firework.r, firework.g, firework.b));
+            }
+            fireworks.splice(i, 1);
+        }
+    });
+
+    particles.forEach((particle, i) => {
+        particle.update();
+        particle.draw();
+        if (particle.life <= 0) particles.splice(i, 1);
+    });
+
+    requestAnimationFrame(animate);
+}
+
+
+animate();
+
 function displayState(curState) {
     state = curState;
     switch (state) {
@@ -43,6 +136,8 @@ function displayState(curState) {
             if (guess.toLowerCase() === correctLabel) {
                 guess_element.innerText = "Correct!";
                 guess_element.style.color = "green";
+                fireworksActive = true;
+                setTimeout(() => { fireworksActive = false; }, 4000);
                 correctGuesses++;
             } else {
                 guess_element.innerText = "Incorrect.";
