@@ -14,9 +14,13 @@ const CLASSES = [
 let correctLabel;
 let guess;
 
-// netActs become flattened when read, so we have to be careful with indexing
-let netActs; 
-let predictions;
+// linNetActs become flattened when read, so we have to be careful with indexing
+let linNetActs; 
+let linPredictions;
+let mlpNetActs;
+let mlpPredictions;
+let leakyNetActs;
+let leakyPredictions;
 
 let testBatchBuffer; // Buffer for reading in binary data
 
@@ -125,12 +129,19 @@ function displayState(curState) {
     switch (state) {
         case 'GUESSING':
             document.getElementById('label').style.display = "none";
+
             document.getElementById('softmax-prediction').style.display = "none";
+            document.getElementById('mlp-prediction').style.display = "none";
+            document.getElementById('leaky-prediction').style.display = "none";
+
             document.getElementById('guess-status').innerText = "";
             break;
         case 'REVEALING':
             document.getElementById('label').style.display = "block";
+
             document.getElementById('softmax-prediction').style.display = "block";
+            document.getElementById('mlp-prediction').style.display = "block";
+            document.getElementById('leaky-prediction').style.display = "block";
             
             guess_element = document.getElementById('guess-status');
             if (guess.toLowerCase() === correctLabel) {
@@ -179,14 +190,31 @@ function displayImage(arrayBuffer, imageIndex, canvasId) {
 
 async function getDataset() {
     try {
-        const [netActsBin, predictionsBin, testBatchBin] = await Promise.all([
+        const [linNetActsBin, linPredictionsBin, 
+            mlpNetActsBin, mlpPredictionsBin, 
+            leakyNetActsBin, leakyPredictionsBin,
+            testBatchBin] = await Promise.all([
             fetch('./cifar-10-binary/cifar-10-batches-bin/linear/lin_net_acts.bin'),
             fetch('./cifar-10-binary/cifar-10-batches-bin/linear/lin_preds.bin'),
+
+            fetch('./cifar-10-binary/cifar-10-batches-bin/mlp/mlp_net_acts.bin'),
+            fetch('./cifar-10-binary/cifar-10-batches-bin/mlp/mlp_preds.bin'),
+
+            fetch('./cifar-10-binary/cifar-10-batches-bin/leaky/leaky_net_acts.bin'),
+            fetch('./cifar-10-binary/cifar-10-batches-bin/leaky/leaky_preds.bin'), 
+
             fetch('./cifar-10-binary/cifar-10-batches-bin/test_batch.bin')
         ]);
 
-        netActs = new Float32Array(await netActsBin.arrayBuffer());
-        predictions = new Uint32Array(await predictionsBin.arrayBuffer());
+        linNetActs = new Float32Array(await linNetActsBin.arrayBuffer());
+        linPredictions = new Uint32Array(await linPredictionsBin.arrayBuffer());
+
+        mlpNetActs = new Float32Array(await mlpNetActsBin.arrayBuffer());
+        mlpPredictions = new Uint32Array(await mlpPredictionsBin.arrayBuffer());
+
+        leakyNetActs = new Float32Array(await leakyNetActsBin.arrayBuffer());
+        leakyPredictions = new Uint32Array(await leakyPredictionsBin.arrayBuffer());
+        
         testBatchBuffer = await testBatchBin.arrayBuffer();
 
         getNextImage(true);
@@ -205,14 +233,33 @@ function getNextImage(isFirstLoad=false) {
     count = Math.floor(10_000 * Math.random());
     displayImage(testBatchBuffer, count, 'image-canvas');
 
-    let prediction = predictions[count];
-    let predictionLabel = CLASSES[prediction];
-    let confidence = netActs[CLASSES.length * count + prediction];
-    let formattedConfidence = (100 * confidence).toFixed(2);
+    let linPrediction = linPredictions[count];
+    let linPredictionLabel = CLASSES[linPrediction];
+    let linConfidence = linNetActs[CLASSES.length * count + linPrediction];
+    let formattedLinConfidence = (100 * linConfidence).toFixed(2);
 
-    let guessStatus = predictionLabel === correctLabel ? "correctly" : "incorrectly";
+    let mlpPrediction = mlpPredictions[count];
+    let mlpPredictionLabel = CLASSES[mlpPrediction];
+    let mlpConfidence = mlpNetActs[CLASSES.length * count + mlpPrediction];
+    let formattedMlpConfidence = (100 * mlpConfidence).toFixed(2);
+
+    let leakyPrediction = leakyPredictions[count];
+    let leakyPredictionLabel = CLASSES[leakyPrediction];
+    let leakyConfidence = leakyNetActs[CLASSES.length * count + leakyPrediction];
+    let formattedLeakyConfidence = (100 * leakyConfidence).toFixed(2);
+
+    let linGuessStatus = linPredictionLabel === correctLabel ? "correctly" : "incorrectly";
     document.getElementById("softmax-prediction").innerText = 
-        `Softmax ${guessStatus} predicted ${predictionLabel} with a confidence of ${formattedConfidence}%`;
+        `Softmax ${linGuessStatus} predicted ${linPredictionLabel} with a confidence of ${formattedLinConfidence}%`;
+
+    let mlpGuessStatus = mlpPredictionLabel === correctLabel ? "correctly" : "incorrectly";
+    document.getElementById("mlp-prediction").innerText = 
+        `\nMLP ${mlpGuessStatus} predicted ${mlpPredictionLabel} with a confidence of ${formattedMlpConfidence}%`;
+
+    let leakyGuessStatus = leakyPredictionLabel === correctLabel ? "correctly" : "incorrectly";
+    document.getElementById("leaky-prediction").innerText = 
+        `\nMLP with Leaky-ReLU ${leakyGuessStatus} predicted ${leakyPredictionLabel} with a confidence of ${formattedLeakyConfidence}%`;
+    
 }
 
 function submitGuess() {
@@ -228,9 +275,6 @@ function submitGuess() {
     if (!guess) {
         return;
     }
-
-    // console.log(guess);
-    // console.log(correctLabel);
 
     displayState('REVEALING');
 
